@@ -7,6 +7,7 @@ using TMPro;
 [RequireComponent(typeof(AudioSource))]
 public class cardSwipe : MonoBehaviour
 {
+    bool canSwipe = false;
     bool Swiping = false;
     private Animator CardAnim;
     public GameObject WorldUI;
@@ -62,6 +63,8 @@ public class cardSwipe : MonoBehaviour
         p1c2.right = "🧟\n\nThe path leads you towards The Crypt.\n\n";
 
         p1c3.start = "🌳\n\nYou arrive and spot a distant castle.\n\nDo you travel towards it?";
+        p1c3.left = "🏰\n\nYou travel towards the castle.\n\n"; // undead (not zombies)
+        p1c3.right = "🌳\n\nYou find yourself travelling down a long road.\n\n"; // goblins
 
         p2c1.start = p1c2.start;
         p2c1.left = "🧟\n\nThe path leads you towards The Crypt.\n\n";
@@ -77,8 +80,6 @@ public class cardSwipe : MonoBehaviour
         p4c1.start = "🧟\n\nThe sounds from the chest have awoken the undead of the crypt.\n\nDo you defend yourself?";
         p4c1.left = "💀\n\nYou attempted to run but the undead were too fast...\n\n";
         p4c1.right = "🧟\n\nUsing the sword you found you successfully defended yourself.\n\n";
-
-        Debug.Log(p1c1);
     }
     
     void Update()
@@ -87,7 +88,7 @@ public class cardSwipe : MonoBehaviour
         Vector3 mouse = Input.mousePosition;
         touch = mouse.x - (Screen.width/2);
         
-        if(SwipeUI.activeSelf) {
+        if(SwipeUI.activeSelf && canSwipe) {
             if(Swiping&&Input.GetMouseButton(0)&&touch>=(Screen.width/3)){
                 Swiping=false;
                 CardAnim.SetTrigger("Right");
@@ -116,7 +117,7 @@ public class cardSwipe : MonoBehaviour
                 }
             }
         }
-        else if (ClickUI.activeSelf) {
+        else if (ClickUI.activeSelf && canSwipe) {
             if (Input.GetMouseButtonDown(0)){ 
                 RaycastHit hit; 
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition); 
@@ -151,6 +152,7 @@ public class cardSwipe : MonoBehaviour
         ClickUI.SetActive(true);
         UIanim.SetTrigger("On");
         UIanim.SetTrigger("TextOn");
+        canSwipe=true;
     }
     bool showText = false;
     bool showUI = false;
@@ -371,10 +373,32 @@ public class cardSwipe : MonoBehaviour
                     break;
                     case "left":
 
+                        UIanim.SetTrigger("Off");
+                        currentCard="P2C2";
+
+                        newText=p1c3.left;
+
+                        crossText="";
+                        tickText="";
+                        leftText="";
+                        rightText="";
+
+                        delayedStart=true;
 
                     break;
                     case "right":
 
+                        UIanim.SetTrigger("Off");
+                        currentCard="P2C2";
+
+                        newText=p1c3.right;
+
+                        crossText="";
+                        tickText="";
+                        leftText="";
+                        rightText="";
+
+                        delayedStart=true;
 
                     break;
                 }
@@ -528,9 +552,12 @@ public class cardSwipe : MonoBehaviour
         if(showText) UIanim.SetTrigger("TextOn");
         if(delayedStart) {
             delayedStart=false;
+            canSwipe=false;
             yield return new WaitForSeconds(3);
             CardAnim.SetTrigger("Left");
             StartCoroutine(UpdateCard("start"));
+            yield return new WaitForSeconds(.75f);
+            canSwipe=true;
         }
     }
 }
